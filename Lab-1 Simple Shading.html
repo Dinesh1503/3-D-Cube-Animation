@@ -1,0 +1,133 @@
+<html>
+    <head>
+        <title>Visual Computing Lab-1</title>
+        <style>
+            body{
+                margin: 0;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <script type="module">
+            
+            import * as THREE from "https://web.cs.manchester.ac.uk/three/three.js-master/build/three.module.js";
+            
+            var camera, scene, renderer, geometry, material, mesh;
+            
+            //create scene
+            scene = new THREE.Scene();
+
+            /*create camera
+            1. What is the purpose of the four arguments of the perspective camera function?
+            Ans: The First Parameter is the 'Field of View' or 'FOV', 
+                 it's value determines how narrow or wide the lens of the camera is, 
+                 it determines the area of the field of view. 
+                 
+                 The Second Parameter is the 'ASPECT' or the aspect ratio, 
+                 it is the height divided by the width of the frame, 
+                 it forms the sides of the viewing volume/frustum.
+
+                 The Third Parameter is the 'NEAR', it is the near plane, 
+                 it determines how close objects can be viewed by the camera, 
+                 if an object gets past the near plane then it won't get captured by the camera. 
+                 
+                 The Fourth Parameter is the 'FAR', it is the far plane, 
+                 it determines how far objects can be viewed by the camera, 
+                 if an object is beyond the far plane then it won't get captured by the camera.
+                 
+                 These Parameters are used to set the camera to point at a specific location and point, 
+                 it forms the pyramid frustum or viewing volume. 
+            
+            2. What happens when you decrease the numerical values?
+            Ans: By decreasing the values of the perspective camera, 
+                 the camera will appear to be close the cuboid, 
+                 if we decrease the values of the FOV, NEAR and FAR plane.
+                 If we change the aspect ratio, 
+                 then the cuboid won't appear to the camera and the screen would have nothing.  
+            */
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+           
+            /*
+            3. What is the purpose of the camera.postion.z?
+            Ans: This value determines how far the camera should be from the object it is focusing.
+
+            4. What happens when you increase or decrease the value?
+            Ans: When you increase the value the object in focus will appear smaller 
+                 because the camera is further from the object, 
+                 decreasing the value will cause the object to appear closer to the camera, 
+                 since the camera is now closer to the object.  
+            */          
+            camera.position.z = 5;
+    
+            //create reneder
+            renderer = new THREE.WebGLRenderer();
+            renderer.setClearColor(0x000000, 1.0);
+
+            /* 5. What happens when the values of the arguments to renderer.SetSize() are changed?
+              Ans: The size of the screen on the browser changes accordingly, 
+                   if the values are increased the screen also increases in size which cause the objects 
+                   position with reference to the camera to change causing the object to appear 
+                   larger or close to the camera and also the position of the object is also changed.
+                   If the values are decreased then the screen size decreases and the object appears smaller
+                   or further from the camera. 
+            */
+            renderer.setSize(window.innerWidth,window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            
+            /*create cube
+
+              6. What is the effect of changing the three arguments of BoxGeometry called in ShaderCube()?
+              Ans: Changing the values of BoxGeometry changes the dimensions/size of the cuboid or object.  
+            */  
+            geometry = new THREE.BoxGeometry(2,1,1);
+            material  = new THREE.ShaderMaterial({fragmentShader: fragmentShader(),vertexShader: vertexShader(),})
+            mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+            animate();
+
+            //Animation 
+            function animate()
+            {
+                //Rotation
+                renderer.render(scene, camera);
+                /*
+                7. How will you speed up the cuboid's motion?
+                Ans: By increasing the value of the 'x','y',or 'z' co-ordinates of mesh.rotation
+                */
+                mesh.rotation.x += 0.011;
+                mesh.rotation.y += 0.013;
+                requestAnimationFrame(animate);
+            }
+
+            function vertexShader()
+            {
+                return `
+                vec4 p;
+                varying vec3 vposInterpolated;
+                void main() {
+                p = projectionMatrix * modelViewMatrix * vec4(position,
+                1.0);
+                gl_Position = p;
+                vposInterpolated = p.xyz;
+                }
+                `
+            }
+
+            /*
+             8. How will you change the cuboid's colour?
+              Ans: The gl_FragColor can be used to change the colour 
+                   by passing different values to the RGB parameters. 
+            */
+            function fragmentShader()
+            {
+                return `
+                varying vec3 vposInterpolated;
+                void main() {
+                gl_FragColor = vec4(vposInterpolated, 1.0);
+                }
+                `
+            }
+        </script>
+    </body>
+</html>
